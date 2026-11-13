@@ -1,0 +1,387 @@
+/* Буровой калькулятор — стили. Светлая и тёмная тема через prefers-color-scheme. */
+
+:root {
+  --bg: #f5f4f1;
+  --surface: #ffffff;
+  --surface-2: #f0eeea;
+  --border: #e2ded6;
+  --text: #1c1b19;
+  --muted: #6b675f;
+  --accent: #b45309;
+  --accent-strong: #92400e;
+  --accent-soft: #fdf1e3;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --info-soft: #eaf1fb;
+  --info: #1d4f91;
+  --shadow: 0 1px 2px rgba(28, 27, 25, .05), 0 4px 16px rgba(28, 27, 25, .05);
+  --radius: 12px;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* схема скважины */
+  --w-rock: #ece6db;
+  --w-ground: #8a7a63;
+  --w-mud: #c9dcef;
+  --w-pipe: #59606b;
+  --w-bore: #9fc2e4;
+  --w-casing: #2f3540;
+  --w-cement: #b9b3a8;
+  --w-wall: #8a6a43;
+  --w-bit: #b45309;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131416;
+    --surface: #1c1d20;
+    --surface-2: #24262a;
+    --border: #33363b;
+    --text: #ecebe8;
+    --muted: #9c9a94;
+    --accent: #f59e0b;
+    --accent-strong: #fbbf24;
+    --accent-soft: #2e2416;
+    --danger: #f97066;
+    --danger-soft: #3a1d1b;
+    --info-soft: #182334;
+    --info: #8ab4f0;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+
+    --w-rock: #2a2722;
+    --w-ground: #7d6f5a;
+    --w-mud: #26425f;
+    --w-pipe: #a3abb7;
+    --w-bore: #35618c;
+    --w-casing: #dfe3e9;
+    --w-cement: #5e5a53;
+    --w-wall: #b08a5a;
+    --w-bit: #f59e0b;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'tnum' 1;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+[hidden] { display: none !important; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+
+/* ---------- шапка ---------- */
+
+.site-header { background: var(--surface); border-bottom: 1px solid var(--border); }
+
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding-top: 18px; padding-bottom: 18px; flex-wrap: wrap;
+}
+
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+
+.brand-mark { width: 40px; height: 40px; flex: none; }
+.brand-mark rect { fill: var(--accent); }
+.brand-mark path { stroke: #fff; stroke-width: 2.5; fill: none; stroke-linejoin: round; }
+
+h1 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -.01em; }
+.subtitle { margin: 2px 0 0; color: var(--muted); font-size: .9rem; }
+
+.header-links { display: flex; gap: 18px; font-weight: 500; font-size: .92rem; }
+
+/* ---------- вкладки ---------- */
+
+.tabs-bar {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.tabs {
+  display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none;
+  padding: 8px 0;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tabs [role="tab"] {
+  flex: none;
+  border: 0; background: transparent; color: var(--muted);
+  font: inherit; font-weight: 500; font-size: .92rem;
+  padding: 8px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+}
+.tabs [role="tab"]:hover { color: var(--text); background: var(--surface-2); }
+.tabs [role="tab"][aria-selected="true"] { color: var(--accent-strong); background: var(--accent-soft); }
+.tabs [role="tab"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ---------- панели ---------- */
+
+main { padding-top: 28px; padding-bottom: 40px; }
+
+.panel-head { margin-bottom: 18px; }
+.panel-head h2 { margin: 0 0 4px; font-size: 1.45rem; letter-spacing: -.01em; }
+.panel-head p { margin: 0; color: var(--muted); max-width: 72ch; }
+
+.calc {
+  display: grid; gap: 18px;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  align-items: start;
+}
+
+.calc-wide { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.calc-wide .inputs { grid-column: 1; }
+.calc-wide .results { grid-column: 1; }
+.calc-wide .schematic { grid-column: 2; grid-row: 1 / span 2; position: sticky; top: 72px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  min-width: 0;
+}
+
+.card h3 {
+  margin: 0 0 14px; font-size: .78rem; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--muted); font-weight: 600;
+}
+
+/* ---------- поля ---------- */
+
+.field { display: block; margin-bottom: 14px; }
+.field-label { display: block; font-weight: 500; font-size: .92rem; margin-bottom: 6px; }
+
+.control {
+  display: flex; align-items: stretch;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); overflow: hidden;
+  transition: border-color .15s, box-shadow .15s;
+}
+.control:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.control:has(.invalid) { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+
+.control input, .control select {
+  flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
+  color: var(--text); font: inherit; font-size: 1rem; padding: 9px 12px;
+}
+.control select { cursor: pointer; }
+.control select option { background: var(--surface); color: var(--text); }
+
+.unit {
+  display: flex; align-items: center; padding: 0 12px;
+  background: var(--surface-2); color: var(--muted); font-size: .88rem;
+  border-left: 1px solid var(--border); white-space: nowrap;
+}
+
+.hint { display: block; color: var(--muted); font-size: .82rem; margin-top: 5px; }
+.error { display: block; color: var(--danger); font-size: .82rem; margin-top: 4px; min-height: 0; }
+.error:empty { display: none; }
+
+.form-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+
+.btn {
+  font: inherit; font-weight: 500; font-size: .9rem;
+  padding: 8px 14px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--accent); background: var(--accent); color: #fff;
+}
+.btn:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn.ghost { background: transparent; color: var(--accent-strong); border-color: var(--border); }
+.btn.ghost:hover { background: var(--accent-soft); border-color: var(--accent); }
+.btn.small { padding: 4px 10px; font-size: .82rem; }
+.btn:focus-visible, .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (prefers-color-scheme: dark) {
+  .btn { color: #1c1b19; }
+}
+
+/* ---------- норматив ---------- */
+
+.norm-box {
+  background: var(--surface-2); border-radius: 8px; padding: 12px 14px;
+  margin: 4px 0 14px; font-size: .85rem;
+}
+.norm-title { font-weight: 600; margin-bottom: 6px; }
+.norm-table { width: 100%; border-collapse: collapse; }
+.norm-table th, .norm-table td { text-align: left; padding: 4px 6px 4px 0; vertical-align: top; }
+.norm-table th { color: var(--muted); font-weight: 500; }
+
+/* ---------- результаты ---------- */
+
+.results-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.results-head h3 { margin: 0; }
+
+.result-grid {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.result {
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+}
+.result.primary { background: var(--accent-soft); border-color: transparent; grid-column: 1 / -1; }
+.result-label { color: var(--muted); font-size: .84rem; }
+.result-value { font-size: 1.35rem; font-weight: 600; letter-spacing: -.01em; margin-top: 2px; }
+.result.primary .result-value { font-size: 2rem; color: var(--accent-strong); }
+.result-unit { font-size: .6em; font-weight: 500; color: var(--muted); }
+.result.primary .result-unit { font-size: .5em; }
+.result-sub { color: var(--muted); font-size: .82rem; margin-top: 2px; }
+
+.formula {
+  margin-top: 16px; padding: 12px 14px;
+  background: var(--surface-2); border-radius: 8px;
+  font-family: var(--mono); font-size: .84rem; line-height: 1.75;
+  overflow-x: auto;
+}
+.formula i { font-family: Georgia, 'Times New Roman', serif; font-size: 1.08em; }
+.f-line { white-space: normal; }
+.formula b { color: var(--accent-strong); font-weight: 500; }
+
+.notes { margin-top: 14px; color: var(--muted); font-size: .88rem; }
+.notes p { margin: 0 0 8px; }
+.note-warn, .note-info { padding: 8px 12px; border-radius: 8px; }
+.note-warn { background: var(--danger-soft); color: var(--danger); }
+.note-info { background: var(--info-soft); color: var(--info); }
+
+.placeholder { color: var(--muted); margin: 0; }
+
+/* ---------- таблицы интервалов ---------- */
+
+.table-scroll { position: relative; overflow-x: auto; margin: 0 -4px; padding: 0 4px; }
+
+.intervals { width: 100%; border-collapse: collapse; min-width: 520px; }
+.intervals th {
+  text-align: left; font-weight: 500; font-size: .82rem; color: var(--muted);
+  padding: 0 6px 6px 0;
+}
+.intervals td { padding: 0 6px 8px 0; }
+.intervals input, .intervals select {
+  width: 100%; font: inherit; font-size: .92rem; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 7px;
+  padding: 7px 8px; outline: 0;
+}
+.intervals select { min-width: 168px; }
+.intervals input:focus, .intervals select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.intervals input.invalid { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+.intervals td:nth-child(2) input { min-width: 70px; }
+.intervals td:nth-child(n+3):nth-child(-n+5) input { min-width: 64px; }
+
+.icon-btn {
+  border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  font-size: 1.3rem; line-height: 1; padding: 4px 8px; border-radius: 6px;
+}
+.icon-btn:hover { color: var(--danger); background: var(--danger-soft); }
+
+#intervals-error { margin-bottom: 8px; }
+
+.breakdown { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: .86rem; }
+.breakdown th, .breakdown td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.breakdown th { color: var(--muted); font-weight: 500; }
+.breakdown th:nth-child(-n+2), .breakdown td:nth-child(-n+2) { text-align: left; }
+
+/* ---------- схема скважины ---------- */
+
+.schematic { margin: 0; }
+.schematic figcaption {
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted); font-weight: 600; margin-bottom: 8px;
+}
+#well-svg svg { width: 100%; height: auto; display: block; max-height: 560px; }
+
+.w-rock { fill: var(--w-rock); }
+.w-ground { stroke: var(--w-ground); stroke-width: 2; }
+.w-mud { fill: var(--w-mud); }
+.w-pipe { fill: var(--w-pipe); }
+.w-bore { fill: var(--w-bore); }
+.w-casing { fill: var(--w-casing); }
+.w-cement { fill: var(--w-cement); }
+.w-wall { stroke: var(--w-wall); stroke-width: 2; stroke-dasharray: 5 3; }
+.w-bit { fill: var(--w-bit); }
+.w-tick { stroke: var(--muted); stroke-width: 1; }
+.w-depth { fill: var(--text); font: 600 11px Inter, system-ui, sans-serif; }
+.w-label { fill: var(--text); font: 11px Inter, system-ui, sans-serif; }
+.w-label.muted { fill: var(--muted); }
+.w-sub { font-size: 8px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: .8rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.lg { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.lg.w-mud { background: var(--w-mud); }
+.lg.w-pipe { background: var(--w-pipe); }
+.lg.w-casing { background: var(--w-casing); }
+.lg.w-cement { background: var(--w-cement); }
+.schematic .hint { margin-top: 6px; }
+
+/* ---------- подвал ---------- */
+
+.site-footer {
+  border-top: 1px solid var(--border); background: var(--surface);
+  padding: 20px 0; font-size: .86rem; color: var(--muted);
+}
+.site-footer p { margin: 0 0 6px; }
+.site-footer strong { color: var(--text); }
+.muted { color: var(--muted); }
+
+/* ---------- страница тестов ---------- */
+
+.summary {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 14px 18px; border-radius: var(--radius); margin-bottom: 18px; font-weight: 600;
+}
+.summary.pass { background: #e7f6ec; color: #11683a; }
+.summary.fail { background: var(--danger-soft); color: var(--danger); }
+@media (prefers-color-scheme: dark) {
+  .summary.pass { background: #15301f; color: #6fdc9a; }
+}
+
+.cases { width: 100%; border-collapse: collapse; font-size: .86rem; }
+.cases th, .cases td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.cases th { color: var(--muted); font-weight: 500; white-space: nowrap; }
+.cases code, .cases .num { font-family: var(--mono); font-size: .8rem; }
+.cases .num { white-space: nowrap; }
+.cases .calc-text { color: var(--muted); font-size: .8rem; margin-top: 3px; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+.badge.ok { background: #e7f6ec; color: #11683a; }
+.badge.bad { background: var(--danger-soft); color: var(--danger); }
+@media (prefers-color-scheme: dark) {
+  .badge.ok { background: #15301f; color: #6fdc9a; }
+}
+
+/* ---------- адаптив ---------- */
+
+@media (max-width: 900px) {
+  .calc, .calc-wide { grid-template-columns: minmax(0, 1fr); }
+  .calc-wide .inputs, .calc-wide .results, .calc-wide .schematic { grid-column: 1; grid-row: auto; position: static; }
+  #well-svg svg { max-height: 440px; }
+}
+
+@media (max-width: 560px) {
+  body { font-size: 14.5px; }
+  .header-inner { padding-top: 14px; padding-bottom: 14px; }
+  h1 { font-size: 1.15rem; }
+  .subtitle { font-size: .82rem; }
+  .brand-mark { width: 34px; height: 34px; }
+  main { padding-top: 20px; }
+  .panel-head h2 { font-size: 1.2rem; }
+  .card { padding: 16px; }
+  .result.primary .result-value { font-size: 1.65rem; }
+  .result-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .result-value { font-size: 1.15rem; }
+  .cases .hide-sm { display: none; }
+}

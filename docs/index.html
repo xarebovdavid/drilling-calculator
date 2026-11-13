@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Буровой калькулятор</title>
+  <meta name="description" content="Инженерные расчёты при бурении нефтяных и газовых скважин: гидростатическое давление, ЭЦП, плотность раствора по пластовому давлению, объёмы скважины, время циркуляции, скорость восходящего потока, вес колонны в растворе.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23b45309'/%3E%3Cpath d='M16 5v14M11 19h10l-5 8z' stroke='%23fff' stroke-width='2.5' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="8"/>
+          <path d="M16 5v14M11 19h10l-5 8z"/>
+        </svg>
+        <div>
+          <h1>Буровой калькулятор</h1>
+          <p class="subtitle">Типовые расчёты технологии бурения нефтяных и газовых скважин</p>
+        </div>
+      </div>
+      <nav class="header-links" aria-label="Ссылки">
+        <a href="tests.html">Проверка формул</a>
+        <a href="https://github.com/xarebovdavid/drilling-calculator">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="tabs-bar">
+    <div class="wrap">
+      <div class="tabs" role="tablist" aria-label="Расчёты">
+        <button role="tab" id="tab-hydro" aria-controls="panel-hydro" data-tab="hydro">Гидростатика</button>
+        <button role="tab" id="tab-ecd" aria-controls="panel-ecd" data-tab="ecd">ЭЦП</button>
+        <button role="tab" id="tab-density" aria-controls="panel-density" data-tab="density">Плотность раствора</button>
+        <button role="tab" id="tab-volumes" aria-controls="panel-volumes" data-tab="volumes">Объёмы</button>
+        <button role="tab" id="tab-circ" aria-controls="panel-circ" data-tab="circ">Циркуляция</button>
+        <button role="tab" id="tab-velocity" aria-controls="panel-velocity" data-tab="velocity">Скорость в КП</button>
+        <button role="tab" id="tab-buoy" aria-controls="panel-buoy" data-tab="buoy">Вес колонны</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+
+    <!-- 1. Гидростатическое давление -->
+    <section class="panel" id="panel-hydro" role="tabpanel" aria-labelledby="tab-hydro">
+      <div class="panel-head">
+        <h2>Гидростатическое давление</h2>
+        <p>Давление столба бурового раствора на заданной глубине и градиент давления.</p>
+      </div>
+      <div class="calc">
+        <form class="card inputs" data-calc="hydro" novalidate>
+          <h3>Исходные данные</h3>
+          <label class="field">
+            <span class="field-label">Плотность раствора ρ</span>
+            <span class="control"><input id="hydro-rho" inputmode="decimal" autocomplete="off" data-min="0.5" data-max="3" data-default="1,20"><span class="unit">г/см³</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Глубина по вертикали h</span>
+            <span class="control"><input id="hydro-h" inputmode="decimal" autocomplete="off" data-min="0.1" data-max="15000" data-default="2500"><span class="unit">м</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <div class="form-actions">
+            <button type="button" class="btn ghost" data-example>Пример</button>
+          </div>
+        </form>
+        <div class="card results" data-results="hydro" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- 2. ЭЦП -->
+    <section class="panel" id="panel-ecd" role="tabpanel" aria-labelledby="tab-ecd" hidden>
+      <div class="panel-head">
+        <h2>Эквивалентная циркуляционная плотность</h2>
+        <p>Плотность, которой соответствует забойное давление при циркуляции с учётом гидравлических потерь в кольцевом пространстве.</p>
+      </div>
+      <div class="calc">
+        <form class="card inputs" data-calc="ecd" novalidate>
+          <h3>Исходные данные</h3>
+          <label class="field">
+            <span class="field-label">Плотность раствора ρ</span>
+            <span class="control"><input id="ecd-rho" inputmode="decimal" autocomplete="off" data-min="0.5" data-max="3" data-default="1,20"><span class="unit">г/см³</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Потери давления в КП ΔP<sub>кп</sub></span>
+            <span class="control"><input id="ecd-dp" inputmode="decimal" autocomplete="off" data-min="0" data-max="50" data-default="2,0"><span class="unit">МПа</span></span>
+            <span class="hint">Сумма потерь в затрубье от расчётной точки до устья</span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Глубина расчётной точки по вертикали H</span>
+            <span class="control"><input id="ecd-h" inputmode="decimal" autocomplete="off" data-min="1" data-max="15000" data-default="3000"><span class="unit">м</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <div class="form-actions">
+            <button type="button" class="btn ghost" data-example>Пример</button>
+          </div>
+        </form>
+        <div class="card results" data-results="ecd" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- 3. Плотность раствора по пластовому давлению -->
+    <section class="panel" id="panel-density" role="tabpanel" aria-labelledby="tab-density" hidden>
+      <div class="panel-head">
+        <h2>Плотность раствора по пластовому давлению</h2>
+        <p>Плотность, при которой гидростатическое давление превышает пластовое на нормативную репрессию, — для вскрытия пласта и выбора плотности раствора глушения.</p>
+      </div>
+      <div class="calc">
+        <form class="card inputs" data-calc="density" novalidate>
+          <h3>Исходные данные</h3>
+          <label class="field">
+            <span class="field-label">Пластовое давление P<sub>пл</sub></span>
+            <span class="control"><input id="density-p" inputmode="decimal" autocomplete="off" data-min="0.1" data-max="200" data-default="25"><span class="unit">МПа</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Глубина кровли пласта по вертикали H</span>
+            <span class="control"><input id="density-h" inputmode="decimal" autocomplete="off" data-min="1" data-max="15000" data-default="2400"><span class="unit">м</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Репрессия на пласт</span>
+            <span class="control"><select id="density-mode" data-default="norm">
+              <option value="norm">По ФНП ПБ НГП (по глубине)</option>
+              <option value="pct">Задать в % от Pпл</option>
+              <option value="abs">Задать в МПа</option>
+            </select></span>
+          </label>
+          <label class="field" data-show-when="density-mode=norm">
+            <span class="field-label">Предел репрессии для H &gt; 1200 м</span>
+            <span class="control"><select id="density-cap" data-default="2.5">
+              <option value="2.5">2,5 МПа</option>
+              <option value="3">3,0 МПа</option>
+            </select></span>
+            <span class="hint">ФНП: «не более 2,5–3,0 МПа»</span>
+          </label>
+          <label class="field" data-show-when="density-mode=pct">
+            <span class="field-label">Репрессия, % от P<sub>пл</sub></span>
+            <span class="control"><input id="density-pct" inputmode="decimal" autocomplete="off" data-min="0" data-max="50" data-default="5"><span class="unit">%</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field" data-show-when="density-mode=abs">
+            <span class="field-label">Репрессия ΔP</span>
+            <span class="control"><input id="density-abs" inputmode="decimal" autocomplete="off" data-min="0" data-max="30" data-default="1,5"><span class="unit">МПа</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <div class="norm-box">
+            <div class="norm-title">Норматив (ФНП ПБ НГП)</div>
+            <table class="norm-table">
+              <tr><th>Интервал по вертикали</th><th>Превышение над P<sub>пл</sub></th></tr>
+              <tr><td>0–1200 м</td><td>не менее 10 %, но не более 1,5 МПа</td></tr>
+              <tr><td>1200 м – проектная глубина</td><td>не менее 5 %, но не более 2,5–3,0 МПа</td></tr>
+            </table>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn ghost" data-example>Пример</button>
+          </div>
+        </form>
+        <div class="card results" data-results="density" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- 4. Объёмы -->
+    <section class="panel" id="panel-volumes" role="tabpanel" aria-labelledby="tab-volumes" hidden>
+      <div class="panel-head">
+        <h2>Объёмы скважины</h2>
+        <p>Внутренний объём бурильной колонны, объём кольцевого пространства и ствола по интервалам конструкции — сверху вниз.</p>
+      </div>
+      <div class="calc calc-wide">
+        <form class="card inputs" data-calc="volumes" novalidate>
+          <h3>Конструкция и компоновка</h3>
+          <div class="table-scroll">
+            <table class="intervals">
+              <thead>
+                <tr>
+                  <th>Интервал</th>
+                  <th>L, м</th>
+                  <th title="Внутренний диаметр обсадной колонны или диаметр открытого ствола">D, мм</th>
+                  <th title="Наружный диаметр труб">d<sub>н</sub>, мм</th>
+                  <th title="Внутренний диаметр труб">d<sub>вн</sub>, мм</th>
+                  <th><span class="sr-only">Удалить</span></th>
+                </tr>
+              </thead>
+              <tbody id="intervals-body"></tbody>
+            </table>
+          </div>
+          <p class="hint">D — внутренний диаметр обсадной колонны или номинальный диаметр открытого ствола (по долоту). Каверны не учитываются.</p>
+          <div class="error" id="intervals-error" aria-live="polite"></div>
+          <div class="form-actions">
+            <button type="button" class="btn" id="add-interval">+ Интервал</button>
+            <button type="button" class="btn ghost" data-example>Пример</button>
+          </div>
+        </form>
+        <div class="card results" data-results="volumes" aria-live="polite"></div>
+        <figure class="card schematic">
+          <figcaption>Схема скважины</figcaption>
+          <div id="well-svg"></div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 5. Циркуляция -->
+    <section class="panel" id="panel-circ" role="tabpanel" aria-labelledby="tab-circ" hidden>
+      <div class="panel-head">
+        <h2>Время циркуляции</h2>
+        <p>Время прокачки до долота, время выхода забойной пачки (bottoms-up) и полного цикла циркуляции при заданной подаче насосов.</p>
+      </div>
+      <div class="calc">
+        <form class="card inputs" data-calc="circ" novalidate>
+          <h3>Исходные данные</h3>
+          <label class="field">
+            <span class="field-label">Подача насосов Q</span>
+            <span class="control"><input id="circ-q" inputmode="decimal" autocomplete="off" data-min="0.1" data-max="200" data-default="30"><span class="unit">л/с</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Внутренний объём труб V<sub>тр</sub></span>
+            <span class="control"><input id="circ-vp" inputmode="decimal" autocomplete="off" data-min="0" data-max="1000" data-default=""><span class="unit">м³</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Объём кольцевого пространства V<sub>кп</sub></span>
+            <span class="control"><input id="circ-va" inputmode="decimal" autocomplete="off" data-min="0" data-max="2000" data-default=""><span class="unit">м³</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Объём в поверхностной системе V<sub>пов</sub></span>
+            <span class="control"><input id="circ-vs" inputmode="decimal" autocomplete="off" data-min="0" data-max="2000" data-default="40"><span class="unit">м³</span></span>
+            <span class="hint">Ёмкости, желобная система, манифольд</span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <div class="form-actions">
+            <button type="button" class="btn" id="take-volumes">Взять из «Объёмов»</button>
+            <button type="button" class="btn ghost" data-example>Пример</button>
+          </div>
+        </form>
+        <div class="card results" data-results="circ" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- 6. Скорость восходящего потока -->
+    <section class="panel" id="panel-velocity" role="tabpanel" aria-labelledby="tab-velocity" hidden>
+      <div class="panel-head">
+        <h2>Скорость восходящего потока</h2>
+        <p>Средняя скорость раствора в кольцевом пространстве — для оценки выноса шлама и гидравлики.</p>
+      </div>
+      <div class="calc">
+        <form class="card inputs" data-calc="velocity" novalidate>
+          <h3>Исходные данные</h3>
+          <label class="field">
+            <span class="field-label">Подача насосов Q</span>
+            <span class="control"><input id="vel-q" inputmode="decimal" autocomplete="off" data-min="0.1" data-max="200" data-default="30"><span class="unit">л/с</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Диаметр скважины / D<sub>вн</sub> обсадной колонны</span>
+            <span class="control"><input id="vel-D" inputmode="decimal" autocomplete="off" data-min="20" data-max="1000" data-default="215,9"><span class="unit">мм</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Наружный диаметр труб d<sub>н</sub></span>
+            <span class="control"><input id="vel-d" inputmode="decimal" autocomplete="off" data-min="10" data-max="1000" data-default="127"><span class="unit">мм</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <div class="form-actions">
+            <button type="button" class="btn ghost" data-example>Пример</button>
+          </div>
+        </form>
+        <div class="card results" data-results="velocity" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- 7. Вес колонны -->
+    <section class="panel" id="panel-buoy" role="tabpanel" aria-labelledby="tab-buoy" hidden>
+      <div class="panel-head">
+        <h2>Вес колонны в растворе</h2>
+        <p>Вес бурильной или обсадной колонны в воздухе и в растворе с учётом коэффициента плавучести (облегчения).</p>
+      </div>
+      <div class="calc">
+        <form class="card inputs" data-calc="buoy" novalidate>
+          <h3>Исходные данные</h3>
+          <label class="field">
+            <span class="field-label">Масса 1 м труб q</span>
+            <span class="control"><input id="buoy-q" inputmode="decimal" autocomplete="off" data-min="0.1" data-max="1000" data-default="29"><span class="unit">кг/м</span></span>
+            <span class="hint">С учётом высаженных концов и замков</span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Длина колонны L</span>
+            <span class="control"><input id="buoy-l" inputmode="decimal" autocomplete="off" data-min="1" data-max="15000" data-default="2000"><span class="unit">м</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Плотность раствора ρ<sub>р</sub></span>
+            <span class="control"><input id="buoy-rho" inputmode="decimal" autocomplete="off" data-min="0" data-max="3" data-default="1,20"><span class="unit">г/см³</span></span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Плотность материала труб ρ<sub>ст</sub></span>
+            <span class="control"><input id="buoy-steel" inputmode="decimal" autocomplete="off" data-min="1" data-max="20" data-default="7,85"><span class="unit">г/см³</span></span>
+            <span class="hint">Сталь — 7,85; ЛБТ (Д16Т) — ≈ 2,78</span>
+            <span class="error" aria-live="polite"></span>
+          </label>
+          <div class="form-actions">
+            <button type="button" class="btn ghost" data-example>Пример</button>
+          </div>
+        </form>
+        <div class="card results" data-results="buoy" aria-live="polite"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p><strong>Учебный инструмент.</strong> Расчёты упрощённые и не заменяют проектную документацию, программы промывки и действующие нормативы. Принято g = 9,81 м/с².</p>
+      <p class="muted">© 2026 David Harebov · <a href="https://github.com/xarebovdavid/drilling-calculator">исходный код</a> · <a href="tests.html">контрольные примеры</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
