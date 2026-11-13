@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Проверка формул</title>
+  <meta name="description" content="Контрольные примеры для формул бурового калькулятора: прогон в браузере против formulas.js.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23b45309'/%3E%3Cpath d='M16 5v14M11 19h10l-5 8z' stroke='%23fff' stroke-width='2.5' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="8"/>
+          <path d="M16 5v14M11 19h10l-5 8z"/>
+        </svg>
+        <div>
+          <h1>Проверка формул</h1>
+          <p class="subtitle">Контрольные примеры из data/cases.json против js/formulas.js</p>
+        </div>
+      </div>
+      <nav class="header-links" aria-label="Ссылки">
+        <a href="./">← Калькулятор</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div id="summary" class="summary">Выполняется…</div>
+    <div class="card">
+      <p class="muted" style="margin-top:0">Ожидаемые значения посчитаны вручную и независимо перепроверены
+        скриптом <code>tests/check_cases.py</code>. Величины в СИ: кг/м³, Па, м, м³, м³/с, с, Н.
+        Допуск — относительный, <span id="rtol"></span>.</p>
+      <div class="table-scroll">
+        <table class="cases">
+          <thead>
+            <tr><th></th><th>Пример</th><th>Функция</th><th>Ожидается</th><th>Получено</th></tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import * as F from './js/formulas.js';
+
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+    function close(actual, expected, rtol) {
+      if (typeof expected === 'boolean') return actual === expected;
+      if (typeof expected === 'number') {
+        if (typeof actual !== 'number' || !Number.isFinite(actual)) return false;
+        if (expected === 0) return Math.abs(actual) <= 1e-12;
+        return Math.abs(actual - expected) <= rtol * Math.abs(expected);
+      }
+      if (expected && typeof expected === 'object') {
+        return actual && Object.entries(expected).every(([k, v]) => k in actual && close(actual[k], v, rtol));
+      }
+      return actual === expected;
+    }
+
+    function show(value, keys) {
+      if (value && typeof value === 'object') {
+        const obj = keys ? Object.fromEntries(keys.map((k) => [k, value[k]])) : value;
+        return Object.entries(obj).map(([k, v]) => `${k}: ${typeof v === 'number' ? +v.toPrecision(12) : v}`).join('<br>');
+      }
+      return typeof value === 'number' ? String(+value.toPrecision(12)) : esc(value);
+    }
+
+    async function run() {
+      const summary = document.getElementById('summary');
+      let data;
+      try {
+        const res = await fetch('data/cases.json', { cache: 'no-store' });
+        data = await res.json();
+      } catch (e) {
+        summary.className = 'summary fail';
+        summary.textContent = 'Не удалось загрузить data/cases.json — откройте страницу через HTTP-сервер.';
+        return;
+      }
+      const rtol = data.rtol ?? 1e-9;
+      document.getElementById('rtol').textContent = String(rtol);
+      let passed = 0;
+      const rows = data.cases.map((c) => {
+        let actual;
+        let ok = false;
+        try {
+          if (typeof F[c.fn] !== 'function') throw new Error(`нет функции ${c.fn}`);
+          actual = F[c.fn](...c.args);
+          ok = close(actual, c.expected, rtol);
+        } catch (e) {
+          actual = `ошибка: ${e.message}`;
+        }
+        if (ok) passed += 1;
+        const keys = c.expected && typeof c.expected === 'object' ? Object.keys(c.expected) : null;
+        return `<tr>
+          <td><span class="badge ${ok ? 'ok' : 'bad'}">${ok ? 'OK' : 'FAIL'}</span></td>
+          <td><div>${esc(c.title)}</div><div class="calc-text">${esc(c.calc)}</div></td>
+          <td><code>${esc(c.fn)}</code></td>
+          <td class="num">${show(c.expected)}</td>
+          <td class="num">${show(actual, keys)}</td>
+        </tr>`;
+      });
+      document.getElementById('rows').innerHTML = rows.join('');
+      const total = data.cases.length;
+      const allOk = passed === total;
+      summary.className = `summary ${allOk ? 'pass' : 'fail'}`;
+      summary.textContent = allOk
+        ? `Все примеры пройдены: ${passed} из ${total}`
+        : `Не пройдено: ${total - passed} из ${total}`;
+      document.title = `${allOk ? '✓' : '✗'} ${passed}/${total} — Проверка формул`;
+    }
+
+    run();
+  </script>
+</body>
+</html>
