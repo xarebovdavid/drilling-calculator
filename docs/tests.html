@@ -60,18 +60,35 @@
         if (expected === 0) return Math.abs(actual) <= 1e-12;
         return Math.abs(actual - expected) <= rtol * Math.abs(expected);
       }
+      if (Array.isArray(expected)) {
+        return Array.isArray(actual) && actual.length === expected.length
+          && expected.every((v, i) => close(actual[i], v, rtol));
+      }
       if (expected && typeof expected === 'object') {
-        return actual && Object.entries(expected).every(([k, v]) => k in actual && close(actual[k], v, rtol));
+        return Boolean(actual) && typeof actual === 'object'
+          && Object.entries(expected).every(([k, v]) => k in actual && close(actual[k], v, rtol));
       }
       return actual === expected;
     }
 
-    function show(value, keys) {
-      if (value && typeof value === 'object') {
-        const obj = keys ? Object.fromEntries(keys.map((k) => [k, value[k]])) : value;
-        return Object.entries(obj).map(([k, v]) => `${k}: ${typeof v === 'number' ? +v.toPrecision(12) : v}`).join('<br>');
+    const scalar = (v) => (typeof v === 'number' ? String(+v.toPrecision(12)) : esc(v));
+
+    /** Значение для таблицы; like — ожидаемое значение: выводятся только его поля. */
+    function show(value, like) {
+      if (Array.isArray(value)) {
+        // Массив объектов (интервалы скважины) — по строке на элемент.
+        return value.map((v, i) => `<div class="arr-item">${i + 1}) ${showInline(v, like && like[i])}</div>`).join('');
       }
-      return typeof value === 'number' ? String(+value.toPrecision(12)) : esc(value);
+      if (value && typeof value === 'object') {
+        const keys = like && typeof like === 'object' ? Object.keys(like) : Object.keys(value);
+        return keys.map((k) => `${k}: ${scalar(value[k])}`).join('<br>');
+      }
+      return scalar(value);
+    }
+    function showInline(value, like) {
+      if (!value || typeof value !== 'object') return scalar(value);
+      const keys = like && typeof like === 'object' ? Object.keys(like) : Object.keys(value);
+      return keys.map((k) => `${k} ${scalar(typeof value[k] === 'number' ? +value[k].toPrecision(6) : value[k])}`).join(', ');
     }
 
     async function run() {
@@ -99,13 +116,12 @@
           actual = `ошибка: ${e.message}`;
         }
         if (ok) passed += 1;
-        const keys = c.expected && typeof c.expected === 'object' ? Object.keys(c.expected) : null;
         return `<tr>
           <td><span class="badge ${ok ? 'ok' : 'bad'}">${ok ? 'OK' : 'FAIL'}</span></td>
           <td><div>${esc(c.title)}</div><div class="calc-text">${esc(c.calc)}</div></td>
           <td><code>${esc(c.fn)}</code></td>
           <td class="num">${show(c.expected)}</td>
-          <td class="num">${show(actual, keys)}</td>
+          <td class="num">${show(actual, c.expected)}</td>
         </tr>`;
       });
       document.getElementById('rows').innerHTML = rows.join('');
