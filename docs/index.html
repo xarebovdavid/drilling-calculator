@@ -173,34 +173,81 @@
     <section class="panel" id="panel-volumes" role="tabpanel" aria-labelledby="tab-volumes" hidden>
       <div class="panel-head">
         <h2>Объёмы скважины</h2>
-        <p>Внутренний объём бурильной колонны, объём кольцевого пространства и ствола по интервалам конструкции — сверху вниз.</p>
+        <p>Конструкция скважины и компоновка бурильной колонны накладываются по глубине: на каждом интервале снаружи —
+          самая внутренняя обсадная колонна или открытый ствол, внутри — секция бурильной колонны.</p>
       </div>
       <div class="calc calc-wide">
-        <form class="card inputs" data-calc="volumes" novalidate>
-          <h3>Конструкция и компоновка</h3>
-          <div class="table-scroll">
-            <table class="intervals">
-              <thead>
-                <tr>
-                  <th>Интервал</th>
-                  <th>L, м</th>
-                  <th title="Внутренний диаметр обсадной колонны или диаметр открытого ствола">D, мм</th>
-                  <th title="Наружный диаметр труб">d<sub>н</sub>, мм</th>
-                  <th title="Внутренний диаметр труб">d<sub>вн</sub>, мм</th>
-                  <th><span class="sr-only">Удалить</span></th>
-                </tr>
-              </thead>
-              <tbody id="intervals-body"></tbody>
-            </table>
+        <form class="vol-form" data-calc="volumes" novalidate>
+          <div class="card inputs vol-card" style="--i: 1">
+            <div class="card-head">
+              <h3>Конструкция скважины</h3>
+              <div class="presets" role="group" aria-label="Готовые примеры">
+                <button type="button" class="btn small ghost" data-example>Пример</button>
+                <button type="button" class="btn small ghost" data-preset="liner">С хвостовиком</button>
+              </div>
+            </div>
+            <div class="vlist casing-list">
+              <div class="vhead" aria-hidden="true">
+                <span>Обсадная колонна</span><span>D<sub>н</sub>, мм</span><span title="Толщина стенки, мм">Стенка</span>
+                <span>D<sub>вн</sub>, мм</span><span>Голова, м</span><span>Башмак, м</span><span></span>
+              </div>
+              <div class="vrows" id="casing-rows"></div>
+            </div>
+            <div class="error vol-error" id="casing-error" aria-live="polite"></div>
+            <div class="form-actions">
+              <button type="button" class="btn small" id="add-casing">+ Колонна</button>
+            </div>
+
+            <div class="subhead">Открытый ствол</div>
+            <div class="field-grid">
+              <div class="field">
+                <label class="field-label" for="vol-bit">Диаметр долота D<sub>д</sub></label>
+                <span class="control"><select id="vol-bit"></select><span class="unit">мм</span></span>
+                <span class="control custom-size" hidden><input id="vol-bit-custom" inputmode="decimal" autocomplete="off" aria-label="Свой диаметр долота, мм" data-min="50" data-max="1000"><span class="unit">мм</span></span>
+                <span class="error" aria-live="polite"></span>
+              </div>
+              <label class="field">
+                <span class="field-label">Забой (текущая глубина)</span>
+                <span class="control"><input id="vol-depth" inputmode="decimal" autocomplete="off" data-min="1" data-max="15000"><span class="unit">м</span></span>
+                <span class="error" aria-live="polite"></span>
+              </label>
+              <label class="field">
+                <span class="field-label">Коэф. кавернозности k<sub>к</sub></span>
+                <span class="control"><input id="vol-k" inputmode="decimal" autocomplete="off" data-min="1" data-max="3"></span>
+                <span class="error" aria-live="polite"></span>
+              </label>
+            </div>
+            <p class="hint">k<sub>к</sub> — отношение фактического объёма открытого ствола к номинальному: площадь сечения ствола
+              умножается на k<sub>к</sub> (эффективный диаметр D<sub>д</sub>·√k<sub>к</sub>). 1,0 — без каверн.</p>
           </div>
-          <p class="hint">D — внутренний диаметр обсадной колонны или номинальный диаметр открытого ствола (по долоту). Каверны не учитываются.</p>
-          <div class="error" id="intervals-error" aria-live="polite"></div>
-          <div class="form-actions">
-            <button type="button" class="btn" id="add-interval">+ Интервал</button>
-            <button type="button" class="btn ghost" data-example>Пример</button>
+
+          <div class="card inputs vol-card" style="--i: 2">
+            <h3>Компоновка бурильной колонны</h3>
+            <div class="bit-line">
+              <svg class="bit-ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4h14l-3 7-4 6-4-6z"/></svg>
+              <span class="bit-text" id="bit-text">Долото</span>
+              <label class="check"><input type="checkbox" id="vol-onbottom" checked><span>на забое</span></label>
+              <label class="field bit-depth-field" hidden>
+                <span class="sr-only">Глубина долота</span>
+                <span class="control"><input id="vol-bitdepth" inputmode="decimal" autocomplete="off" data-min="1" data-max="15000" aria-label="Глубина долота, м"><span class="unit">м</span></span>
+                <span class="error" aria-live="polite"></span>
+              </label>
+            </div>
+            <div class="vlist string-list">
+              <div class="vhead" aria-hidden="true">
+                <span>Элемент</span><span>Типоразмер</span><span>D<sub>н</sub>, мм</span><span>d<sub>вн</sub>, мм</span><span>L, м</span><span></span>
+              </div>
+              <div class="vrows" id="string-rows"></div>
+            </div>
+            <p class="hint">Секции — от долота вверх. Длина верхней секции не вводится: она дополняет колонну до устья.
+              ВЗД считается трубой с наружным диаметром корпуса и условным проходным каналом d<sub>вн</sub>.</p>
+            <div class="error vol-error" id="string-error" aria-live="polite"></div>
+            <div class="form-actions">
+              <button type="button" class="btn small" id="add-section">+ Секция</button>
+            </div>
           </div>
         </form>
-        <div class="card results" data-results="volumes" aria-live="polite"></div>
+        <div class="card results" data-results="volumes" aria-live="polite" style="--i: 3"></div>
         <figure class="card schematic">
           <figcaption>Схема скважины</figcaption>
           <div id="well-svg"></div>
